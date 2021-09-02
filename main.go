@@ -28,11 +28,14 @@ func main() {
 
 	connectDatabase()
 
-	r.GET("/contacts/:id", readContact)
-	r.GET("/contacts", readContacts)
-	r.POST("/contacts", createContact)
-	r.PUT("/contacts/:id", updateContact)
-	r.DELETE("/contacts/:id", deleteContact)
+	v1 := r.Group("/api/v1/contacts")
+	{
+		v1.POST("/", createContact)
+		v1.GET("/", readContacts)
+		v1.GET("/:id", readContact)
+		v1.PUT("/:id", updateContact)
+		v1.DELETE("/:id", deleteContact)
+	}
 	r.Run()
 }
 
@@ -58,7 +61,7 @@ func readContact(c *gin.Context) {
 	var con Contact
 
 	if err := db.First(&con, id).Error; err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "contact with id: " + id + " not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "contact with id: " + id + " not found"})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, con)
@@ -73,7 +76,7 @@ func readContacts(c *gin.Context) {
 func createContact(c *gin.Context) {
 	var newCon Contact
 	if err := c.BindJSON(&newCon); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid JSON for contact"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid JSON for contact"})
 		return
 	}
 	db.Create(&newCon)
@@ -85,16 +88,16 @@ func updateContact(c *gin.Context) {
 	var con Contact
 
 	if err := db.First(&con, id).Error; err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "contact with id: " + id + " not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "contact with id: " + id + " not found"})
 		return
 	}
 	origID := con.ID
 	if err := c.BindJSON(&con); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid JSON for contact"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid JSON for contact"})
 		return
 	}
 	if origID != con.ID {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Cannot modify ID"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot modify ID"})
 		return
 	}
 	db.Save(&con)
@@ -106,7 +109,7 @@ func deleteContact(c *gin.Context) {
 	var con Contact
 
 	if err := db.First(&con, id).Error; err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "contact with id: " + id + " not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "contact with id: " + id + " not found"})
 		return
 	}
 
