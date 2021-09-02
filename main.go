@@ -69,7 +69,10 @@ func readContact(c *gin.Context) {
 
 func readContacts(c *gin.Context) {
 	var cons []Contact
-	db.Find(&cons)
+	if db.Find(&cons).RowsAffected == 0 {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "no contacts found"})
+		return
+	}
 	c.IndentedJSON(http.StatusOK, gin.H{"contacts": cons})
 }
 
@@ -101,7 +104,7 @@ func updateContact(c *gin.Context) {
 		return
 	}
 	db.Save(&con)
-	c.JSON(http.StatusOK, con)
+	c.JSON(http.StatusAccepted, con)
 }
 
 func deleteContact(c *gin.Context) {

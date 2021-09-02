@@ -13,11 +13,11 @@ The server will generate the db file the first time in the directory where you e
 ## API Definition
 | Call | Success | Failure |
 |---|---|---|
-| POST /api/v1/contacts/ | 201 | 400 |
-| GET /api/v1/contacts/ | 200 | |
-| GET /api/v1/contacts/:id | 200 | 404 |
-| PUT /api/v1/contacts/:id | 200 | 400, 404 |
-| DELETE /api/v1/contacts/:id | 204 | 404 |
+| POST /api/v1/contacts/ | 201 created | 400 if JSON is not valid |
+| GET /api/v1/contacts/ | 200 OK | 404 if no contacts are found |
+| GET /api/v1/contacts/:id | 200 OK | 404 if contact with id is not found |
+| PUT /api/v1/contacts/:id | 202 accepted | 400 if JSON is not valid<br>404 if contact with id is not found |
+| DELETE /api/v1/contacts/:id | 204 no content | 404 if contact with id is not found |
 
 If an entry is retrieved, created or modified, the api will return a JSON representation of that entry:
 
