@@ -28,10 +28,11 @@ func main() {
 
 	connectDatabase()
 
+	gin.EnableJsonDecoderDisallowUnknownFields() // error on undefined JSON fields
 	v1 := r.Group("/api/v1/contacts")
 	{
-		v1.POST("/", createContact)
-		v1.GET("/", readContacts)
+		v1.POST("", createContact)
+		v1.GET("", readContacts)
 		v1.GET("/:id", readContact)
 		v1.PUT("/:id", updateContact)
 		v1.DELETE("/:id", deleteContact)
