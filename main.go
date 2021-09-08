@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type Contact struct {
@@ -41,7 +41,7 @@ func main() {
 }
 
 func connectDatabase() {
-	database, err := gorm.Open("sqlite3", "test.db")
+	database, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 
 	if err != nil {
 		panic("Failed to connect to database")
@@ -50,7 +50,7 @@ func connectDatabase() {
 	database.AutoMigrate(&Contact{})
 	db = database
 
-	var count int
+	var count int64
 	db.Model(&Contact{}).Count(&count)
 	if count == 0 {
 		db.Create(&sampleCon)
