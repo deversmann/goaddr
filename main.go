@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -24,6 +27,26 @@ var sampleCon = Contact{FirstName: "Paul", LastName: "Cormir", Address: "100 E. 
 var db *gorm.DB
 
 func main() {
+	viper.SetDefault("DBDialect", "sqlite")
+	viper.SetDefault("DBDSN", "file::memory:?cache=shared")
+	viper.SetDefault("Port", "8080")
+	viper.SetConfigName("goaddr-config")
+	viper.AddConfigPath(".")
+	viper.SetEnvPrefix("goaddr")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found; ignore error if desired
+		} else {
+			// Config file was found but another error was produced
+			panic(fmt.Errorf("fatal error config file: %w", err))
+		}
+	}
+
+	for k, v := range viper.AllSettings() {
+		fmt.Printf("  %s=%s\n", k, v)
+	}
+
 	r := gin.Default()
 
 	connectDatabase()
@@ -37,11 +60,24 @@ func main() {
 		v1.PUT("/:id", updateContact)
 		v1.DELETE("/:id", deleteContact)
 	}
-	r.Run()
+	r.Run(fmt.Sprintf(":%s", viper.Get("Port")))
 }
 
 func connectDatabase() {
-	database, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	var dialector gorm.Dialector
+	dialect := viper.Get("DBDialect").(string)
+	dsn := viper.Get("DBDSN").(string)
+
+	switch dialect {
+	case "sqlite":
+		dialector = sqlite.Open(dsn)
+	case "postgresql":
+		dialector = postgres.Open(dsn)
+	default:
+		panic(fmt.Sprint("Unknown/unimplemented database dialect: ", dialect))
+	}
+
+	database, err := gorm.Open(dialector, &gorm.Config{})
 
 	if err != nil {
 		panic("Failed to connect to database")
