@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -114,7 +116,13 @@ func readContact(c *gin.Context) {
 
 func readContacts(c *gin.Context) {
 	var cons []Contact
-	if db.Find(&cons).RowsAffected == 0 {
+	tx, err := parseQuery(c, db)
+	if err != nil {
+		log.Println(err)
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		return
+	}
+	if tx.Find(&cons).RowsAffected == 0 {
 		log.Println("No results returned")
 		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "no contacts found"})
 		return
@@ -177,4 +185,39 @@ func getenv(key, fallback string) string {
 		return fallback
 	}
 	return val
+}
+
+func parseQuery(c *gin.Context, tx *gorm.DB) (*gorm.DB, error) {
+	// sorting first
+	if sortBy := c.Query("sort_by"); sortBy != "" {
+		log.Printf("** sort_by: %s\n", sortBy)
+		for _, chunk := range strings.Split(sortBy, ",") {
+			asRunes := []rune(chunk)
+			if asRunes[0] == '-' {
+				log.Printf("** Order: %s %s\n", string(asRunes[1:]), "desc")
+				tx = tx.Order(fmt.Sprintf("%s %s", string(asRunes[1:]), "desc"))
+			} else {
+				log.Printf("** Order: %s\n", chunk)
+				tx = tx.Order(chunk)
+			}
+		}
+	}
+	// page size
+	if limit := c.Query("limit"); limit != "" {
+		iLimit, err := strconv.Atoi(limit)
+		if err != nil {
+			log.Printf("invalid value for limit: %s", limit)
+			return tx, fmt.Errorf("invalid value for limit: %s", limit)
+		}
+		tx = tx.Limit(iLimit)
+	}
+	// page number
+	if offset := c.Query("offset"); offset != "" {
+		iOffset, err := strconv.Atoi(offset)
+		if err != nil {
+			return tx, fmt.Errorf("invalid value for offset: %s", offset)
+		}
+		tx = tx.Offset(iOffset)
+	}
+	return tx, nil
 }
