@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -9,6 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Contact struct {
@@ -42,7 +44,8 @@ var dsn = "file::memory:?cache=shared"
 var port = "8080"
 
 func main() {
-
+	log.SetPrefix("[GOADDR] ")
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	initConfig()
 	initDB()
 
@@ -58,13 +61,16 @@ func main() {
 		contactsRoute.PUT("/:id", updateContact)
 		contactsRoute.DELETE("/:id", deleteContact)
 	}
-	r.Run(port)
+	r.Run(fmt.Sprintf(":%s", port))
 }
 
 func initConfig() {
 	dialect = getenv("GOADDR_DBDIALECT", dialect)
 	dsn = getenv("GOADDR_DBDSN", dsn)
 	port = getenv("GOADDR_PORT", port)
+	log.Println("Using dialect =", dialect)
+	log.Println("Using dsn     =", dsn)
+	log.Println("Using port    =", port)
 }
 
 func initDB() {
@@ -75,21 +81,22 @@ func initDB() {
 	case "postgresql":
 		dialector = postgres.Open(dsn)
 	default:
-		panic(fmt.Sprint("Unknown/unimplemented database dialect: ", dialect))
+		log.Fatalf("Unknown/unimplemented database dialect: %s", dialect)
 	}
 
-	database, err := gorm.Open(dialector, &gorm.Config{})
-
+	database, err := gorm.Open(dialector, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)}) // turning off GORM's internal logging
 	if err != nil {
-		panic("Failed to connect to database")
+		log.Fatal(err)
 	}
-
-	database.AutoMigrate(&Contact{})
 	db = database
+	if err := db.AutoMigrate(&Contact{}); err != nil {
+		log.Fatal(err)
+	}
 
 	var count int64
 	db.Model(&Contact{}).Count(&count)
 	if count == 0 {
+		log.Println("Empty database detected, creating sample entry.")
 		db.Create(&sampleCon)
 	}
 }
@@ -97,8 +104,8 @@ func initDB() {
 func readContact(c *gin.Context) {
 	id := c.Param("id")
 	var con Contact
-
 	if err := db.First(&con, id).Error; err != nil {
+		log.Println(err)
 		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "contact with id: " + id + " not found"})
 		return
 	}
@@ -108,6 +115,7 @@ func readContact(c *gin.Context) {
 func readContacts(c *gin.Context) {
 	var cons []Contact
 	if db.Find(&cons).RowsAffected == 0 {
+		log.Println("No results returned")
 		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "no contacts found"})
 		return
 	}
@@ -117,6 +125,7 @@ func readContacts(c *gin.Context) {
 func createContact(c *gin.Context) {
 	var newCon Contact
 	if err := c.BindJSON(&newCon); err != nil {
+		log.Println(err)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid JSON for contact"})
 		return
 	}
@@ -129,15 +138,18 @@ func updateContact(c *gin.Context) {
 	var con Contact
 
 	if err := db.First(&con, id).Error; err != nil {
+		log.Println(err)
 		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "contact with id: " + id + " not found"})
 		return
 	}
 	origID := con.ID
 	if err := c.BindJSON(&con); err != nil {
+		log.Println(err)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid JSON for contact"})
 		return
 	}
 	if origID != con.ID {
+		log.Println("Record ID mismatch")
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot modify ID"})
 		return
 	}
@@ -150,14 +162,15 @@ func deleteContact(c *gin.Context) {
 	var con Contact
 
 	if err := db.First(&con, id).Error; err != nil {
+		log.Println(err)
 		c.IndentedJSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "contact with id: " + id + " not found"})
 		return
 	}
-
 	db.Delete(con)
 	c.Status(http.StatusNoContent)
 }
 
+// returns the environment variable or a fallback if not set
 func getenv(key, fallback string) string {
 	val := os.Getenv(key)
 	if len(val) == 0 {
