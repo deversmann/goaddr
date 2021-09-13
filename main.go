@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -188,7 +189,17 @@ func getenv(key, fallback string) string {
 }
 
 func parseQuery(c *gin.Context, tx *gorm.DB) (*gorm.DB, error) {
-	// sorting first
+	// search
+	t := reflect.TypeOf(Contact{})
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i).Tag.Get("json")
+		if search := c.Query(field); search != "" {
+			log.Println(fmt.Sprint(field, " LIKE ?"), fmt.Sprintf("%%%s%%", search))
+			tx = tx.Where(fmt.Sprint(field, " LIKE ?"), fmt.Sprintf("%%%s%%", search))
+		}
+	}
+
+	// sorting
 	if sortBy := c.Query("sort_by"); sortBy != "" {
 		log.Printf("** sort_by: %s\n", sortBy)
 		for _, chunk := range strings.Split(sortBy, ",") {
