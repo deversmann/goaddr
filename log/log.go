@@ -1,3 +1,7 @@
+// Package log contains a uber-basic logging framework with 2 levels: Info and Debug
+// Inspired by:
+// 	https://forum.golangbridge.org/t/whats-so-bad-about-the-stdlibs-log-package/1435
+//	https://dave.cheney.net/2015/11/05/lets-talk-about-logging
 package log
 
 import (
@@ -21,6 +25,12 @@ var (
 	White  = "\033[97m"
 )
 
+// logging levels
+var (
+	Debug *log.Logger
+	Info  *log.Logger
+)
+
 func init() {
 	if runtime.GOOS == "windows" {
 		Reset = ""
@@ -33,10 +43,13 @@ func init() {
 		Gray = ""
 		White = ""
 	}
-}
 
-// logging levels
-var (
-	Debug = log.New(io.Discard, fmt.Sprint("[", Red, "DBG", Reset, "] "), log.Ldate|log.Ltime|log.Lshortfile)
-	Info  = log.New(os.Stderr, fmt.Sprint("[", Green, "INF", Reset, "] "), log.Ldate|log.Ltime|log.Lshortfile)
-)
+	Debug = log.New(
+		io.Discard, // discard debug by default
+		fmt.Sprint("[", Red, "DBG", Reset, "] "),
+		log.Ldate|log.Ltime|log.Lshortfile)
+	Info = log.New(
+		os.Stderr,
+		fmt.Sprint("[", Green, "INF", Reset, "] "),
+		log.Ldate|log.Ltime|log.Lshortfile)
+}

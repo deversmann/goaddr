@@ -48,6 +48,7 @@ var (
 )
 
 func main() {
+	log.Debug.SetOutput(os.Stderr) // turns on debug log output
 	initConfig()
 	initDB()
 
@@ -63,6 +64,7 @@ func main() {
 		contactsRoute.PUT("/:id", updateContact)
 		contactsRoute.DELETE("/:id", deleteContact)
 	}
+	log.Info.Println("Server running and listening on port ", port)
 	r.Run(fmt.Sprintf(":%s", port))
 }
 
