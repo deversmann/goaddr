@@ -6,7 +6,7 @@ package log
 
 import (
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -45,7 +45,7 @@ func init() {
 	}
 
 	Debug = log.New(
-		io.Discard, // discard debug by default
+		ioutil.Discard, // discard debug by default
 		fmt.Sprint("[", Red, "DBG", Reset, "] "),
 		log.Ldate|log.Ltime|log.Lshortfile)
 	Info = log.New(
