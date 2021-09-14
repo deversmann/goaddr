@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -74,7 +74,7 @@ func initConfig() {
 	case "DEBUG":
 		log.Debug.SetOutput(os.Stderr)
 	case "NONE":
-		log.Info.SetOutput(io.Discard)
+		log.Info.SetOutput(ioutil.Discard)
 	}
 	log.Debug.Println("Debugging log on")
 	log.Info.Println("Info log on")
