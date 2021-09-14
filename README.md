@@ -73,9 +73,10 @@ The following attributes can be configured by using environment variables:
 The group GET request has multiple combinable ways of being limited:
 | Type | Syntax | Notes |
 |---|---|---|
+| Filter | `<field>=<value>` | Does a case-insensitive search for the **value** in the named **field** |
 | Sort | `sort_by=<field1>,-<field2>` | Prepend the field name with '-' for descending sort<br>Should be used for reliable pagination |
 | Limit | `limit=<number>` | Only returns the first **number** results<br>Used in conjunction with **offset** to paginate results |
-| Offset | `offset=<number>` | Discards the first **number** results<br>Used in conjunction with **limit** to paginate results
+| Offset | `offset=<number>` | Discards the first **number** results<br>Used in conjunction with **limit** to paginate results |
 
 
 ## Return Values

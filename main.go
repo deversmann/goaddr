@@ -212,8 +212,8 @@ func parseQuery(c *gin.Context, tx *gorm.DB) (*gorm.DB, error) {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i).Tag.Get("json")
 		if search := c.Query(field); search != "" {
-			log.Debug.Println(fmt.Sprint(field, "- LIKE ?"), fmt.Sprintf("%%%s%%", search))
-			tx = tx.Where(fmt.Sprint(field, " LIKE ?"), fmt.Sprintf("%%%s%%", search))
+			log.Debug.Printf("- %s: %s", field, search)
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", field), fmt.Sprintf("%%%s%%", search))
 		}
 	}
 
