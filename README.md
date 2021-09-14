@@ -57,6 +57,7 @@ The following attributes can be configured by using environment variables:
 | Database Dialect | `GOADDR_DBDIALECT` | `sqlite` | The type of database being connected to.  Currently only `sqlite` and `postgresql` are valid options. For `sqlite`, the service will create the specified db file if it doesn't exist. |
 | Database DSN | `GOADDR_DBDSN` | `file::memory:?cache=shared`<br>(in-memory db) | The connect string for the database selected. See https://gorm.io/docs/connecting_to_the_database.html for examples |
 | Web Service Port | `GOADDR_PORT` | `8080` | The port the web service will listen on |
+| Logging Level | `GOADDR_LOGLEVEL` | No Default| There are only 2 log levels, DEBUG and INFO.  By default, only INFO is on.  Set to `DEBUG` to add DEBUG or to `NONE` to turn off all. |
 
 
 ## API Definition

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -48,7 +49,6 @@ var (
 )
 
 func main() {
-	log.Debug.SetOutput(os.Stderr) // turns on debug log output
 	initConfig()
 	initDB()
 
@@ -69,6 +69,16 @@ func main() {
 }
 
 func initConfig() {
+	logLevel := getenv("GOADDR_LOGLEVEL", "")
+	switch logLevel {
+	case "DEBUG":
+		log.Debug.SetOutput(os.Stderr)
+	case "NONE":
+		log.Info.SetOutput(io.Discard)
+	}
+	log.Debug.Println("Debugging log on")
+	log.Info.Println("Info log on")
+
 	dialect = getenv("GOADDR_DBDIALECT", dialect)
 	dsn = getenv("GOADDR_DBDSN", dsn)
 	port = getenv("GOADDR_PORT", port)
@@ -91,11 +101,11 @@ func initDB() {
 
 	database, err := gorm.Open(dialector, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)}) // turning off GORM's internal logging
 	if err != nil {
-		log.Info.Fatal(err)
+		log.Info.Fatal("Unrecoverable error opening database:", err)
 	}
 	db = database
 	if err := db.AutoMigrate(&Contact{}); err != nil {
-		log.Info.Fatal(err)
+		log.Info.Fatal("Unrecoverable error migrating database:", err)
 	}
 
 	var count int64
