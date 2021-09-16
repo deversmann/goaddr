@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/deversmann/goaddr/log"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -54,6 +55,7 @@ func main() {
 	initDB()
 
 	r := gin.Default()
+	r.Use(cors.Default())
 	gin.EnableJsonDecoderDisallowUnknownFields() // error on undefined JSON fields
 	apiRoot := r.Group("/api")
 	v1 := apiRoot.Group("/v1")
