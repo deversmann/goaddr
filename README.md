@@ -1,6 +1,6 @@
 # goaddr
 
-![CI](https://github.com/github/docs/actions/workflows/ci.yml/badge.svg
+![CI](https://github.com/deversmann/goaddr/actions/workflows/ci.yml/badge.svg
 
 A Restful API (and db) for a super simple Address Book written in Golang.  Requires Go 1.15 or higher to build.
 
