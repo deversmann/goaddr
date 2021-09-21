@@ -223,10 +223,9 @@ func parseQuery(c *gin.Context, tx *gorm.DB) (*gorm.DB, error) {
 	if sortBy := c.Query("sort_by"); sortBy != "" {
 		log.Debug.Printf("- sort_by: %s\n", sortBy)
 		for _, chunk := range strings.Split(sortBy, ",") {
-			asRunes := []rune(chunk)
-			if asRunes[0] == '-' {
-				log.Debug.Printf("- Order: %s %s\n", string(asRunes[1:]), "desc")
-				tx = tx.Order(fmt.Sprintf("%s %s", string(asRunes[1:]), "desc"))
+			if strings.HasPrefix(chunk, "-") {
+				log.Debug.Printf("- Order: %s %s\n", strings.TrimPrefix(chunk, "-"), "desc")
+				tx = tx.Order(fmt.Sprintf("%s %s", strings.TrimPrefix(chunk, "-"), "desc"))
 			} else {
 				log.Debug.Printf("- Order: %s\n", chunk)
 				tx = tx.Order(chunk)

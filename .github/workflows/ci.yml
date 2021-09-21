@@ -1,0 +1,41 @@
+---
+name: CI
+on: 
+  push:
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  go-build:
+    name: Build go${{ matrix.go }}-${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: ['1.15', '1.16', '1.17']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Install go dependencies
+        run: go mod tidy
+      - name: Build the project
+        run: go build
+  
+  # docker build test
+  container-build:
+    name: Build container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+      - name: Buildah action
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: goaddr
+          tags: ci
+          containerfiles: |
+            ./Containerfile
