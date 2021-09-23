@@ -127,3 +127,19 @@ If an error occurs, the HTTP error code will be accompanied by a message describ
   "status": 400
 }
 ```
+
+## Links
+
+### Frameworks
+- [GIN](https://gin-gonic.com) - Web framework for handling API requests and responses
+- [GORM](https://gorm.io) - Used for database connections and mapping
+
+### Other
+The following pages were used significantly for inspiration and/or as references:
+- https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
+- https://golang.org/doc/tutorial/web-service-gin
+- https://blog.logrocket.com/how-to-build-a-rest-api-with-golang-using-gin-and-gorm/
+- https://semaphoreci.com/community/tutorials/building-go-web-applications-and-microservices-using-gin
+- https://medium.com/wesionary-team/create-your-first-rest-api-with-golang-using-gin-gorm-and-mysql-d439bcc6f987
+
+

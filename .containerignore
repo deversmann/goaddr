@@ -1,0 +1,8 @@
+.containerignore
+.git/
+.github/
+.gitignore
+Containerfile
+LICENSE
+README.md
+test.db
