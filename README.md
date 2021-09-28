@@ -43,10 +43,10 @@ podman build --tag localhost/goaddr .
 ```
 The resulting container could be run using:
 ```bash
-podman run -d -rm \
+podman run -d --rm \
   -e GOADDR_DBDIALECT="postgresql" \
   -e GOADDR_DBDSN="host=192.0.2.42 user=user password=pass dbname=db" \
-  -e GOADDR_PORT=8081
+  -e GOADDR_PORT=8081 \
   -p 8081:8081 --name goaddr localhost/goaddr
 ```
 
